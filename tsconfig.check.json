@@ -1,0 +1,10 @@
+{
+  // Typecheck de tests, ejemplos y config (con tipos de Node). No emite nada.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["src", "test", "ejemplos", "vitest.config.ts"]
+}

@@ -1,0 +1,55 @@
+{
+  "name": "ts-workflow-core",
+  "version": "0.1.0",
+  "description": "Motor de flujos configurables en TypeScript: definición, validación del grafo, intérprete puro, explicación («por qué no puedo») y simulación. Sin IO y con una sola dependencia (zod).",
+  "license": "MIT",
+  "author": "EasyIndustry",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EasyIndustry/ts-workflow-core.git"
+  },
+  "homepage": "https://github.com/EasyIndustry/ts-workflow-core#readme",
+  "bugs": "https://github.com/EasyIndustry/ts-workflow-core/issues",
+  "keywords": [
+    "workflow",
+    "state-machine",
+    "rules",
+    "typescript"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.check.json",
+    "test": "vitest run",
+    "test:cobertura": "vitest run --coverage",
+    "ejemplo": "tsx ejemplos/taller/demo.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "@vitest/coverage-v8": "^4.1.11",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
