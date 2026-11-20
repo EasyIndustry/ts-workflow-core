@@ -38,4 +38,17 @@ export { explicar, type Explicacion } from "./explicar.js";
 export { simular, type Escenario, type PasoEscenario, type PasoSimulado, type ResultadoSimulacion } from "./simular.js";
 export { elegirVersion, iniciarInstancia, ultimaVersion, type FuenteFlujo, type Instancia } from "./versiones.js";
 export { validarJsonSchema } from "./jsonSchema.js";
+export { huella, jsonCanonico } from "./huella.js";
+export { compararCapacidades, compararEsquemas, compararFlujos, type Cambio, type CodigoCambio, type Comparacion, type NivelCambio } from "./comparar.js";
+export {
+  verificarReferencias,
+  type Comparador,
+  type EstadoRevision,
+  type Referencia,
+  type ReferenciaHuerfana,
+  type ReferenciaObsoleta,
+  type ReferenciaVigente,
+  type ResultadoReferencias,
+  type Revisionado,
+} from "./referencias.js";
 export { ErrorFlujo, type CodigoError } from "./errores.js";
