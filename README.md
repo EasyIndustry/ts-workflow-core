@@ -10,6 +10,7 @@ Motor de flujos configurables, como librería. Una app declara sus **capacidades
 - **Vocabulario cerrado:** las reglas combinan capacidades registradas. No hay código ni expresiones libres.
 - **Restringe, no habilita:** la app suma sus propias reglas (permisos, facturación, stock). Una acción se puede hacer si la permiten las dos.
 - **Versionado:** cada instancia se evalúa con la versión del flujo con la que arrancó.
+- **Trazabilidad:** compara versiones (qué cambio rompe y cuál no), verifica referencias contra un catálogo de revisiones y calcula huellas.
 - **Una sola dependencia:** `zod`. Anda en Node y en el navegador.
 
 El diseño completo está en [`docs/diseno.md`](docs/diseno.md). Qué entra al core y qué no (es agnóstico: las capacidades y las reglas de cada negocio van en su app) está en [`POLITICA.md`](POLITICA.md).
@@ -49,7 +50,7 @@ No se publica en npm: se instala desde GitHub. `dist/` (JavaScript con sus `.d.t
 
 ```bash
 npm i github:EasyIndustry/ts-workflow-core          # la última de main
-npm i github:EasyIndustry/ts-workflow-core#v0.1.0   # fijado a un tag (recomendado)
+npm i github:EasyIndustry/ts-workflow-core#v0.2.0   # fijado a un tag (recomendado)
 ```
 
 ```ts
@@ -145,9 +146,53 @@ El schema es `definicionSchema` (zod), y `definicionJsonSchema()` devuelve el JS
 | `simular(flujo, escenario, registro)` | Recorre pasos `{ accion, contexto?, espera? }` sin ejecutar nada; `ok` dice si se cumplió todo lo esperado. |
 | `casilleros(resultado)` | Las hojas que aplican de un árbol evaluado, para dibujarlas como checklist. |
 | `elegirVersion`, `ultimaVersion`, `iniciarInstancia` | Versionado: una instancia nueva arranca en la última versión y después se evalúa siempre con la suya. |
+| `compararFlujos(antes, despues)` | Compara dos versiones de una definición: `{ compatible, cambios[{ nivel, codigo, ruta, mensaje }] }`. Ver [Trazabilidad](#trazabilidad). |
+| `compararEsquemas(antes, despues)` · `compararCapacidades(antes, despues)` | Lo mismo para dos JSON Schema (conservador) y para dos registros. |
+| `verificarReferencias(referencias, catalogo, comparar)` | Clasifica referencias `{ clave, revision }` en vigentes, actualizables, que rompen y huérfanas. |
+| `huella(valor)` · `jsonCanonico(valor)` | SHA-256 (hex) del JSON canónico: claves ordenadas, sin `undefined`. Síncrono y sin dependencias. |
 | `validarJsonSchema(valor, esquema)` | El subconjunto de JSON Schema que usa el validador (type, required, properties, additionalProperties, enum, const, oneOf/anyOf, items, largos, mínimos y máximos, pattern). Se reemplaza con `opciones.validarEsquema`. |
 
 Los errores de uso (una versión que no está, una condición que no existe en el registro, una condición que tira una excepción) son `ErrorFlujo`, con `codigo`.
+
+## Trazabilidad
+
+Herramientas puras para saber qué versión usa cada cosa y qué pasa si se la cambia. Guardar, publicar y registrar quién
+lo hizo sigue siendo de la app.
+
+**Comparar versiones.** La pregunta es siempre: *lo que valía con la versión vieja, ¿sigue valiendo con la nueva?* Cada
+cambio sale como `compatible` o `rompe`, y ante la duda, `rompe`.
+
+```ts
+const { compatible, cambios } = compararFlujos(v1, v2);
+// cambios: [{ nivel: "rompe", codigo: "requisitos_endurecidos", ruta: "transiciones[terminar].requisitos", mensaje: "…" }, …]
+```
+
+| Rompe | Compatible |
+|---|---|
+| Quitar un estado, una decisión o una transición (se emparejan por `id`) | Agregar estados, decisiones o transiciones |
+| Achicar el `desde` | Ampliar el `desde` |
+| Cambiar la acción o el `hacia` de una transición, o las ramas o el `sino` de una decisión | Cambiar efectos, sugerencias, nombres, `final`, el estado inicial o los metadatos |
+| Endurecer los `requisitos` (o no poder probar que no se endurecieron) | Relajarlos o sacarlos; cambiar solo un `mensaje` |
+
+`compararEsquemas` hace lo mismo con dos JSON Schema (por ejemplo, el `schemaEntrada` de una capacidad en dos versiones
+de la app) y `compararCapacidades`, con dos registros. Para saber si una definición guardada sigue andando con el
+registro nuevo, la respuesta exacta es `validarDefinicion(def, registroNuevo)`.
+
+**Verificar referencias.** Una `Referencia` es `{ clave, revision }`: por ejemplo, el flujo y la versión con la que
+arrancó una instancia. El catálogo es la lista de revisiones que tiene la app (`Revisionado<T>`: `clave`, `revision`,
+`estado` —`borrador`, `vigente` u `obsoleta`—, `valor` y una `huella` opcional).
+
+```ts
+const catalogo = versiones.map((def) => ({ clave: def.id, revision: def.version, estado: estadoDe(def), valor: def }));
+const r = verificarReferencias(instanciasAbiertas.map((i) => ({ clave: "pedido", revision: i.version })), catalogo, compararFlujos);
+// r.vigentes · r.actualizables (pasar a la vigente no exige reglas nuevas) · r.rompen · r.huerfanas
+```
+
+El comparador es un parámetro (`compararFlujos` o el de la app) y puede devolver una `Comparacion` o solo un booleano.
+
+**Huella.** `huella(valor)` es el SHA-256 del JSON canónico (`jsonCanonico`: claves ordenadas como en RFC 8785, sin
+`undefined`, números como `JSON.stringify`). Dos copias con las claves en otro orden dan la misma huella. Los
+`metadatos` de una definición entran en la huella; si no deben contar, se sacan antes.
 
 ## El registro
 

@@ -11,5 +11,8 @@ export { explicar } from "./explicar.js";
 export { simular } from "./simular.js";
 export { elegirVersion, iniciarInstancia, ultimaVersion } from "./versiones.js";
 export { validarJsonSchema } from "./jsonSchema.js";
+export { huella, jsonCanonico } from "./huella.js";
+export { compararCapacidades, compararEsquemas, compararFlujos } from "./comparar.js";
+export { verificarReferencias, } from "./referencias.js";
 export { ErrorFlujo } from "./errores.js";
 //# sourceMappingURL=index.js.map

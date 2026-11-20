@@ -154,7 +154,20 @@ Los `params` se validan con un **subconjunto propio de JSON Schema** (`type`, `r
 - Una instancia nueva arranca con la última versión (`iniciarInstancia(versiones)`, que devuelve `{ version, estado: estadoInicial }`). La app guarda `version` junto al estado de la entidad.
 - `evaluar`, `explicar` y `simular` eligen la definición por `instancia.version` (`elegirVersion`). Si les pasan una sola definición de otra versión, fallan: nunca se evalúa una instancia con reglas que no eran las suyas.
 - **Consecuencia directa:** «¿qué pasa con las órdenes abiertas antes del cambio?» se responde solo. Siguen con la versión vieja y no se les exigen las reglas nuevas.
-- **Fuera de v0:** migrar una instancia a otra versión (con un mapa de estados explícito) y comparar dos versiones para el editor.
+- **Comparar dos versiones** (`compararFlujos`) dice, cambio por cambio, si una instancia de la vieja podría seguir con la nueva sin que le exijan reglas nuevas (§4.1). Mover la instancia es decisión de la app: el core no migra nada.
+- **Fuera del core por ahora:** migrar una instancia a otra versión con un mapa de estados explícito.
+
+### 4.1 Trazabilidad
+
+El core da las herramientas puras; guardar, publicar y registrar quién publicó son de la app.
+
+- **Comparar.** `compararFlujos(antes, despues)` devuelve `{ compatible, cambios[] }` y cada cambio es `compatible` o `rompe`. La pregunta es una sola: *lo que valía con la versión vieja, ¿sigue valiendo con la nueva?* Estados, decisiones y transiciones se emparejan por `id` (renombrar un id es quitar y agregar).
+  - **Rompe:** quitar un estado, una decisión o una transición; achicar el `desde`; cambiar la acción o el `hacia` de una transición; cambiar las ramas o el `sino` de una decisión; endurecer los `requisitos`.
+  - **Compatible:** todo lo demás (agregar, ampliar el `desde`, relajar requisitos, sugerencias, efectos, nombres, `final`, estado inicial, metadatos).
+  - Los requisitos se comparan con una prueba sintáctica y conservadora de implicación (`todas`, `alguna`, `no` y `si/entonces`): solo es «relajado» si se puede probar que lo nuevo no pide nada que lo viejo no pidiera. Si no se puede probar, rompe. Un `mensaje` no cambia la regla.
+- **Capacidades.** `compararEsquemas` compara dos JSON Schema con el mismo subconjunto que el validador (§3): compatible si todo valor que aceptaba el viejo lo acepta el nuevo. Las anotaciones (`title`, `description`, `default`…) no cuentan; cualquier otra palabra que no entiende y cambia, rompe. `compararCapacidades` lo aplica a dos registros. Para una definición concreta, la respuesta exacta es `validarDefinicion(def, registroNuevo)`.
+- **Referencias.** `Referencia = { clave, revision }` y `Revisionado<T> = { clave, revision, estado, valor, huella? }`, con `estado` `borrador`, `vigente` u `obsoleta`. Son solo tipos: el ciclo de publicación es de la app. `verificarReferencias(referencias, catalogo, comparar)` las separa en **vigentes**, **actualizables** (pasar a la vigente es compatible), **que rompen** y **huérfanas** (la revisión no está, o la clave no tiene vigente). El comparador es un parámetro, así que sirve para flujos (`compararFlujos`) o para cualquier otra cosa que la app versione.
+- **Huella.** `huella(valor)` es el SHA-256 del JSON canónico (`jsonCanonico`: claves ordenadas como en RFC 8785, sin `undefined`). Está escrita en TypeScript y es síncrona: sin `node:crypto` (el core anda en el navegador) ni `crypto.subtle` (es asíncrono).
 
 ## 5. Reglas duras que quedan en el código
 
@@ -252,4 +265,4 @@ Un taller de servicio técnico quiere cuatro reglas: firma obligatoria para term
 
 ## 10. Fuera de v0
 
-Migrar instancias entre versiones, comparar versiones, estados jerárquicos o paralelos, timers y plazos («si en 48 h no…»), exportar a Mermaid, guardar y publicar definiciones (es de la app) y un editor visual.
+Migrar instancias entre versiones (comparar versiones ya está: §4.1), estados jerárquicos o paralelos, timers y plazos («si en 48 h no…»), exportar a Mermaid, guardar y publicar definiciones (es de la app) y un editor visual.
