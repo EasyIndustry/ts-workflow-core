@@ -9,7 +9,9 @@ export type CodigoError =
   | "capacidad_desconocida"
   | "tipo_de_capacidad"
   | "condicion_fallo"
-  | "decision_sin_salida";
+  | "decision_sin_salida"
+  | "valor_no_serializable"
+  | "revision_duplicada";
 
 export class ErrorFlujo extends Error {
   readonly codigo: CodigoError;
