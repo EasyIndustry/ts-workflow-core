@@ -12,7 +12,7 @@ Motor de flujos configurables, como librería. Una app declara sus **capacidades
 - **Versionado:** cada instancia se evalúa con la versión del flujo con la que arrancó.
 - **Una sola dependencia:** `zod`. Anda en Node y en el navegador.
 
-El diseño completo está en [`docs/diseno.md`](docs/diseno.md).
+El diseño completo está en [`docs/diseno.md`](docs/diseno.md). Qué entra al core y qué no (es agnóstico: las capacidades y las reglas de cada negocio van en su app) está en [`POLITICA.md`](POLITICA.md).
 
 ## Cómo probarlo
 
@@ -184,6 +184,10 @@ npm run ejemplo         # el ejemplo del taller
 ```
 
 `dist/` va en el repo para que se pueda instalar desde GitHub sin build. Si cambiás `src/`, corré `npm run build` y commiteá `dist/` junto con el cambio: el CI falla si `dist/` no coincide con el build.
+
+## Contribuir
+
+Un pedido pasa por el filtro de [`POLITICA.md`](POLITICA.md): entra lo que sirve para cualquier dominio; la lógica de negocio, los nombres de clientes y las capacidades concretas quedan en cada app. Cómo proponer y cómo se revisa, en [`CONTRIBUTING.md`](CONTRIBUTING.md). Los issues usan las plantillas *Pedido* y *Error*.
 
 ## Licencia
 

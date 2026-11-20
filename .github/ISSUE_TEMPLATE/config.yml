@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Política del repositorio
+    url: https://github.com/EasyIndustry/ts-workflow-core/blob/main/POLITICA.md
+    about: Qué entra al core y cómo se evalúa un pedido.

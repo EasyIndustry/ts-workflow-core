@@ -1,0 +1,43 @@
+name: Pedido
+description: Algo que el core no hace y debería hacer. Pasa por el filtro de POLITICA.md.
+labels: [triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este core es agnóstico: no entra la solución de una app, entra la herramienta que resuelve esa clase de problema para cualquier dominio. Las capacidades concretas (acciones, condiciones, efectos) las registra cada app. Antes de seguir, mirá [POLITICA.md](https://github.com/EasyIndustry/ts-workflow-core/blob/main/POLITICA.md).
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué problema tenés
+      description: La necesidad, no la solución. Qué intentás hacer y dónde te frena el core. Sin nombres de clientes, productos ni sistemas internos.
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Qué proponés
+      description: Cómo lo resolverías. Si tenés una idea de la API, mejor con valores planos.
+  - type: textarea
+    id: otros-dominios
+    attributes:
+      label: ¿Sirve fuera de tu app?
+      description: Al menos otro dominio distinto donde serviría igual (no otra pantalla de la misma app). Si hoy es solo tu caso, contalo igual; quizás se puede generalizar.
+    validations:
+      required: true
+  - type: textarea
+    id: en-la-app
+    attributes:
+      label: ¿Se puede resolver en tu app?
+      description: ¿Alcanza con registrar una capacidad (acción, condición o efecto), escribir una definición o armar el contexto, en vez de tocar el core? Si probaste y no alcanza, contá qué faltó.
+    validations:
+      required: true
+  - type: checkboxes
+    id: politica
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Leí POLITICA.md y lo que pido no es lógica de negocio, una capacidad concreta ni algo de un solo cliente o rubro.
+          required: true
+        - label: El pedido no tiene nombres de clientes, productos, personas ni sistemas internos.
+          required: true
