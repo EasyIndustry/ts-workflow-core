@@ -4,7 +4,7 @@ import { type EsquemaJson, type FuenteDescriptores } from "./registro.js";
  * Validación de una definición: el schema y después el grafo (referencias, ciclos de decisiones, ambigüedad, estados
  * alcanzables, callejones) y, si se pasa el registro, las capacidades y sus params. Mensajes en castellano con la ruta.
  */
-export type CodigoProblema = "esquema" | "id_duplicado" | "referencia_inexistente" | "no_es_estado" | "excepto_sin_comodin" | "ciclo_de_decisiones" | "transicion_ambigua" | "estado_inalcanzable" | "decision_inalcanzable" | "callejon" | "sin_estado_final" | "capacidad_desconocida" | "tipo_de_capacidad" | "params_invalidos";
+export type CodigoProblema = "esquema" | "id_duplicado" | "referencia_inexistente" | "no_es_estado" | "excepto_sin_comodin" | "ciclo_de_decisiones" | "transicion_ambigua" | "reaccion_vacia" | "reaccion_ambigua" | "reaccion_fuera_de_transicion" | "estado_inalcanzable" | "decision_inalcanzable" | "callejon" | "sin_estado_final" | "capacidad_desconocida" | "tipo_de_capacidad" | "params_invalidos";
 export interface Problema {
     codigo: CodigoProblema;
     mensaje: string;

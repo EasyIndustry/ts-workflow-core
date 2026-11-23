@@ -194,6 +194,27 @@ El comparador es un parámetro (`compararFlujos` o el de la app) y puede devolve
 `undefined`, números como `JSON.stringify`). Dos copias con las claves en otro orden dan la misma huella. Los
 `metadatos` de una definición entran en la huella; si no deben contar, se sacan antes.
 
+## Eventos y reacciones
+
+Una definición puede decir qué hacer cuando pasa algo afuera. El core sigue sin escuchar nada: la app (o un plugin) recibe
+el evento, carga el contexto, pide el plan y lo ejecuta en su transacción.
+
+```ts
+// En la definición:
+// reacciones: [{ id: "al-pagar", evento: "pago.acreditado", params: { medio: "transferencia" }, desde: ["esperando"], transicion: "confirmar" }]
+
+suscripciones(versionesEnUso); // [{ clave, evento: "pago.acreditado", params: { medio: "transferencia" } }]
+
+const plan = reaccionar(versiones, instancia, { evento: "pago.acreditado", params: { medio: "transferencia" } }, contexto, registro);
+// null: en ese estado nadie escucha el evento
+// { aplica: false, motivos: [...] }: no se cumple la condición o los requisitos de la transición
+// { aplica: true, transicion, destino, cambiaEstado, efectos: [...] }: la app lo ejecuta
+```
+
+- **No habilita.** `transicion` pasa por los mismos requisitos que si la hiciera una persona.
+- **`params` identifica la ocurrencia** y se compara entero. Los datos del evento los pone la app en el contexto, igual que `entrada`.
+- **Versiones.** Para no dejar de escuchar algo que hace falta, pasá a `suscripciones` también las versiones con instancias activas.
+
 ## El registro
 
 ```ts

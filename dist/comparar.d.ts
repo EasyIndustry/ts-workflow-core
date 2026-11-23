@@ -8,7 +8,7 @@ import { type EsquemaJson, type FuenteDescriptores } from "./registro.js";
  * `rompe` si no, o si no se puede asegurar: la comparación es conservadora y ante la duda dice `rompe`.
  */
 export type NivelCambio = "compatible" | "rompe";
-export type CodigoCambio = "datos_cambiados" | "estado_inicial_cambiado" | "estado_agregado" | "estado_quitado" | "estado_modificado" | "decision_agregada" | "decision_quitada" | "decision_modificada" | "transicion_agregada" | "transicion_quitada" | "transicion_modificada" | "accion_cambiada" | "desde_ampliado" | "desde_reducido" | "hacia_cambiado" | "requisitos_relajados" | "requisitos_endurecidos" | "sugerencias_cambiadas" | "efectos_cambiados" | "esquema_relajado" | "esquema_endurecido" | "esquema_anotacion" | "capacidad_agregada" | "capacidad_quitada" | "capacidad_tipo_cambiado" | "capacidad_modificada";
+export type CodigoCambio = "datos_cambiados" | "estado_inicial_cambiado" | "estado_agregado" | "estado_quitado" | "estado_modificado" | "decision_agregada" | "decision_quitada" | "decision_modificada" | "transicion_agregada" | "transicion_quitada" | "transicion_modificada" | "accion_cambiada" | "desde_ampliado" | "desde_reducido" | "hacia_cambiado" | "requisitos_relajados" | "requisitos_endurecidos" | "sugerencias_cambiadas" | "efectos_cambiados" | "reaccion_agregada" | "reaccion_quitada" | "reaccion_modificada" | "esquema_relajado" | "esquema_endurecido" | "esquema_anotacion" | "capacidad_agregada" | "capacidad_quitada" | "capacidad_tipo_cambiado" | "capacidad_modificada";
 export interface Cambio {
     nivel: NivelCambio;
     codigo: CodigoCambio;
@@ -27,7 +27,8 @@ export interface Comparacion {
  *
  * Rompe: quitar un estado, una decisión o una transición; achicar el `desde`; cambiar la acción o el `hacia` de una
  * transición; cambiar las ramas o el `sino` de una decisión; endurecer los `requisitos` (o no poder probar que no se
- * endurecieron). Lo demás es compatible: agregar, ampliar el `desde`, relajar requisitos, cambiar sugerencias, efectos,
+ * endurecieron); quitar una reacción, agregar una que mueve de estado o cambiar cuándo dispara o adónde lleva una
+ * existente (una reacción actúa sola, sin que nadie apriete un botón). Lo demás es compatible: agregar, ampliar el `desde`, relajar requisitos, cambiar sugerencias, efectos,
  * nombres, `final`, el estado inicial o los metadatos.
  *
  * Falla con `ErrorFlujo` («versiones_mezcladas») si las dos definiciones son de flujos distintos.

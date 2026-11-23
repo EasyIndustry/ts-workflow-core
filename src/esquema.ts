@@ -68,6 +68,17 @@ export const transicionSchema = z.strictObject({
   efectos: z.array(efectoSchema).optional(),
 });
 
+export const reaccionSchema = z.strictObject({
+  id: identificador,
+  evento: identificador.describe("Id de una capacidad de tipo evento."),
+  params: params.optional().describe("Qué ocurrencia del evento escucha: se compara entera con los params del evento."),
+  desde: z.union([z.literal("*"), z.array(identificador).min(1)]).describe('Estados en los que escucha, o "*" para todos.'),
+  excepto: z.array(identificador).optional().describe('Con desde "*": estados excluidos.'),
+  si: condicionSchema.optional().describe("Si está, la reacción solo aplica cuando se cumple."),
+  transicion: identificador.optional().describe("Transición a intentar. Pasa por sus requisitos: una reacción no abre nada que la transición cierre."),
+  efectos: z.array(efectoSchema).optional(),
+});
+
 export const definicionSchema = z.strictObject({
   id: identificador,
   version: z.number().int().min(1),
@@ -77,6 +88,7 @@ export const definicionSchema = z.strictObject({
   estados: z.array(estadoSchema).min(1),
   decisiones: z.array(decisionSchema).optional(),
   transiciones: z.array(transicionSchema),
+  reacciones: z.array(reaccionSchema).optional().describe("Qué hace el flujo cuando llega un evento de afuera."),
   metadatos: z.record(z.string(), z.unknown()).optional().describe("Libre para el editor (posiciones, colores). El intérprete no lo mira."),
 });
 
@@ -84,6 +96,7 @@ export type Efecto = z.infer<typeof efectoSchema>;
 export type Estado = z.infer<typeof estadoSchema>;
 export type Decision = z.infer<typeof decisionSchema>;
 export type Transicion = z.infer<typeof transicionSchema>;
+export type Reaccion = z.infer<typeof reaccionSchema>;
 export type DefinicionFlujo = z.infer<typeof definicionSchema>;
 
 /** Mensajes de zod en castellano, solo para este parseo (no se toca la configuración global de zod de la app). */

@@ -24,7 +24,7 @@ export interface PasoRecorrido {
 export interface EfectoResuelto {
   efecto: string;
   params: Params;
-  /** De dónde sale: «transicion:<id>» o «estado:<id>» (los `alEntrar` del destino). */
+  /** De dónde sale: «transicion:<id>», «estado:<id>» (los `alEntrar` del destino) o «reaccion:<id>». */
   origen: string;
 }
 
@@ -97,7 +97,7 @@ export function evaluar<C>(fuente: FuenteFlujo, instancia: Instancia, contexto: 
 }
 
 /** ¿La transición se puede intentar desde este estado? */
-export function aplicaDesde(t: Transicion, estado: string): boolean {
+export function aplicaDesde(t: Pick<Transicion, "desde" | "excepto">, estado: string): boolean {
   if (t.desde === "*") return !(t.excepto ?? []).includes(estado);
   return t.desde.includes(estado);
 }
@@ -144,7 +144,7 @@ function resolverDestino<C>(definicion: DefinicionFlujo, t: Transicion, estado: 
   return { destino: nodo, recorrido };
 }
 
-function resolverEfectos<C>(efectos: Efecto[] | undefined, origen: string, ruta: string, contexto: C, registro: Registro<C>): EfectoResuelto[] {
+export function resolverEfectos<C>(efectos: Efecto[] | undefined, origen: string, ruta: string, contexto: C, registro: Registro<C>): EfectoResuelto[] {
   return (efectos ?? []).flatMap((e, i) => {
     if (e.si && !evaluarCondicion(e.si, contexto, registro, `${ruta}[${i}].si`).cumple) return [];
     return [{ efecto: e.efecto, params: e.params ?? {}, origen }];

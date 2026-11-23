@@ -1,4 +1,5 @@
 import { parsearDefinicion, type Condicion, type DefinicionFlujo, type Efecto, type Params } from "./esquema.js";
+import { jsonCanonico } from "./huella.js";
 import { aplicaDesde } from "./interprete.js";
 import { validarJsonSchema } from "./jsonSchema.js";
 import { mapaDeDescriptores, type DescriptorCapacidad, type EsquemaJson, type FuenteDescriptores, type TipoCapacidad } from "./registro.js";
@@ -17,6 +18,9 @@ export type CodigoProblema =
   | "excepto_sin_comodin"
   | "ciclo_de_decisiones"
   | "transicion_ambigua"
+  | "reaccion_vacia"
+  | "reaccion_ambigua"
+  | "reaccion_fuera_de_transicion"
   | "estado_inalcanzable"
   | "decision_inalcanzable"
   | "callejon"
@@ -89,6 +93,21 @@ export function validarDefinicion(valor: unknown, registro?: FuenteDescriptores,
     debeExistir(d.sino, `decisiones[${i}].sino`, `El «sino» de ${entreComillas(d.nombre)}`);
   });
 
+  const transiciones = new Map(def.transiciones.map((t) => [t.id, t]));
+  repetidos((def.reacciones ?? []).map((r, i) => ({ id: r.id, ruta: `reacciones[${i}]` }))).forEach(({ id, ruta }) =>
+    error("id_duplicado", `Hay dos reacciones con el id ${entreComillas(id)}.`, ruta),
+  );
+  (def.reacciones ?? []).forEach((r, i) => {
+    const ruta = `reacciones[${i}]`;
+    if (r.desde !== "*") r.desde.forEach((d, j) => debeSerEstado(d, `${ruta}.desde[${j}]`, `«desde» de la reacción ${entreComillas(r.id)}`));
+    (r.excepto ?? []).forEach((d, j) => debeSerEstado(d, `${ruta}.excepto[${j}]`, `«excepto» de la reacción ${entreComillas(r.id)}`));
+    if (r.excepto && r.desde !== "*") aviso("excepto_sin_comodin", `La reacción ${entreComillas(r.id)} tiene «excepto» pero no usa desde "*": no tiene efecto.`, `${ruta}.excepto`);
+    if (r.transicion === undefined && !r.efectos?.length) error("reaccion_vacia", `La reacción ${entreComillas(r.id)} no hace nada: necesita una transición o algún efecto.`, ruta);
+    if (r.transicion !== undefined && !transiciones.has(r.transicion)) {
+      error("referencia_inexistente", `La reacción ${entreComillas(r.id)} usa la transición ${entreComillas(r.transicion)}, que no existe.`, `${ruta}.transicion`);
+    }
+  });
+
   const referenciasSanas = errores.length === 0;
 
   // --- Ambigüedad: desde un mismo estado, una acción tiene a lo sumo una transición.
@@ -102,6 +121,33 @@ export function validarDefinicion(valor: unknown, registro?: FuenteDescriptores,
         error(
           "transicion_ambigua",
           `Desde ${entreComillas(estado.nombre)} la acción ${entreComillas(accion)} tiene ${ids.length} transiciones (${enumerar(ids.map(entreComillas))}). Usá una sola con un nodo de decisión.`,
+          `estados[${def.estados.indexOf(estado)}]`,
+        );
+      }
+    }
+  }
+
+  // --- Reacciones: en cada estado, una ocurrencia de un evento tiene a lo sumo una reacción, y su transición se puede intentar.
+  for (const estado of def.estados) {
+    const porOcurrencia = new Map<string, string[]>();
+    for (const r of def.reacciones ?? []) {
+      if (!aplicaDesde(r, estado.id)) continue;
+      const clave = jsonCanonico({ evento: r.evento, params: r.params ?? {} });
+      porOcurrencia.set(clave, [...(porOcurrencia.get(clave) ?? []), r.id]);
+      const t = r.transicion === undefined ? undefined : transiciones.get(r.transicion);
+      if (t && !aplicaDesde(t, estado.id)) {
+        error(
+          "reaccion_fuera_de_transicion",
+          `La reacción ${entreComillas(r.id)} escucha en ${entreComillas(estado.nombre)}, pero la transición ${entreComillas(t.id)} no se puede hacer desde ahí.`,
+          `reacciones[${def.reacciones!.indexOf(r)}].transicion`,
+        );
+      }
+    }
+    for (const ids of porOcurrencia.values()) {
+      if (ids.length > 1) {
+        error(
+          "reaccion_ambigua",
+          `En ${entreComillas(estado.nombre)} el mismo evento dispara ${ids.length} reacciones (${enumerar(ids.map(entreComillas))}). Usá una sola con un nodo de decisión.`,
           `estados[${def.estados.indexOf(estado)}]`,
         );
       }
@@ -242,10 +288,16 @@ function validarCapacidades(def: DefinicionFlujo, mapa: Map<string, DescriptorCa
     if (t.sugerencias) condicion(t.sugerencias, `${ruta}.sugerencias`);
     efectos(t.efectos, `${ruta}.efectos`);
   });
+  (def.reacciones ?? []).forEach((r, i) => {
+    const ruta = `reacciones[${i}]`;
+    usar(r.evento, "evento", `${ruta}.evento`, r.params);
+    if (r.si) condicion(r.si, `${ruta}.si`);
+    efectos(r.efectos, `${ruta}.efectos`);
+  });
 }
 
-const NOMBRE_TIPO: Record<TipoCapacidad, string> = { accion: "La acción", condicion: "La condición", efecto: "El efecto" };
-const ARTICULO_TIPO: Record<TipoCapacidad, string> = { accion: "una acción", condicion: "una condición", efecto: "un efecto" };
+const NOMBRE_TIPO: Record<TipoCapacidad, string> = { accion: "La acción", condicion: "La condición", efecto: "El efecto", evento: "El evento" };
+const ARTICULO_TIPO: Record<TipoCapacidad, string> = { accion: "una acción", condicion: "una condición", efecto: "un efecto", evento: "un evento" };
 
 function repetidos(items: { id: string; ruta: string }[]) {
   const vistos = new Set<string>();

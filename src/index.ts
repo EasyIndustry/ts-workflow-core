@@ -9,6 +9,7 @@ export {
   definicionSchema,
   efectoSchema,
   estadoSchema,
+  reaccionSchema,
   parsearDefinicion,
   transicionSchema,
   type Condicion,
@@ -17,6 +18,7 @@ export {
   type Efecto,
   type Estado,
   type Params,
+  type Reaccion,
   type Transicion,
 } from "./esquema.js";
 export {
@@ -33,6 +35,7 @@ export {
 } from "./registro.js";
 export { validarDefinicion, type CodigoProblema, type OpcionesValidacion, type Problema, type ResultadoValidacion } from "./validar.js";
 export { evaluar, type AccionBloqueada, type AccionPermitida, type EfectoResuelto, type PasoRecorrido, type ResultadoEvaluacion } from "./interprete.js";
+export { reaccionar, suscripciones, type EventoFlujo, type PlanReaccion, type Suscripcion } from "./reacciones.js";
 export { casilleros, describir, motivos, type Casillero, type ResultadoCondicion } from "./condiciones.js";
 export { explicar, type Explicacion } from "./explicar.js";
 export { simular, type Escenario, type PasoEscenario, type PasoSimulado, type ResultadoSimulacion } from "./simular.js";

@@ -6,7 +6,7 @@ import type { Params } from "./esquema.js";
  * existen, con qué parámetros y cómo se describen. La app lo llena con proveedores al arrancar.
  */
 
-export type TipoCapacidad = "accion" | "condicion" | "efecto";
+export type TipoCapacidad = "accion" | "condicion" | "efecto" | "evento";
 
 /** Un JSON Schema. El core valida un subconjunto (ver `validarJsonSchema`); el resto de las palabras se ignora. */
 export type EsquemaJson = { readonly [clave: string]: unknown };
@@ -19,7 +19,7 @@ export interface DescriptorCapacidad {
   readonly nombre: string;
   readonly tipo: TipoCapacidad;
   readonly descripcion?: string | undefined;
-  /** Params de la condición o del efecto, o el input de la acción. */
+  /** Params de la condición, del efecto o del evento, o el input de la acción. */
   readonly schemaEntrada?: EsquemaJson | undefined;
   /** Condiciones: frases con `{param}` para cuando se cumple y para cuando no. Las usan `explicar` y el editor. */
   readonly texto?: { readonly cumple: string; readonly noCumple: string } | undefined;
@@ -33,9 +33,9 @@ export interface CapacidadCondicion<C = Record<string, unknown>> extends Descrip
   evaluar(params: Params, contexto: C): boolean;
 }
 
-/** Acciones y efectos son solo descriptores: los ejecuta la app. */
+/** Acciones, efectos y eventos son solo descriptores: los ejecuta o los emite la app (o un plugin suyo). */
 export interface CapacidadSinEvaluacion extends DescriptorCapacidad {
-  readonly tipo: "accion" | "efecto";
+  readonly tipo: "accion" | "efecto" | "evento";
 }
 
 export type Capacidad<C = Record<string, unknown>> = CapacidadCondicion<C> | CapacidadSinEvaluacion;
@@ -52,7 +52,7 @@ export interface Registro<C = Record<string, unknown>> {
   descriptores(tipo?: TipoCapacidad): DescriptorCapacidad[];
 }
 
-const TIPOS: readonly TipoCapacidad[] = ["accion", "condicion", "efecto"];
+const TIPOS: readonly TipoCapacidad[] = ["accion", "condicion", "efecto", "evento"];
 
 /** Arma el registro. Falla si una capacidad está mal declarada o si dos proveedores usan el mismo id. */
 export function crearRegistro<C = Record<string, unknown>>(proveedores: readonly Proveedor<C>[]): Registro<C> {

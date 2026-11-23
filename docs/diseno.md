@@ -169,6 +169,16 @@ El core da las herramientas puras; guardar, publicar y registrar quién publicó
 - **Referencias.** `Referencia = { clave, revision }` y `Revisionado<T> = { clave, revision, estado, valor, huella? }`, con `estado` `borrador`, `vigente` u `obsoleta`. Son solo tipos: el ciclo de publicación es de la app. `verificarReferencias(referencias, catalogo, comparar)` las separa en **vigentes**, **actualizables** (pasar a la vigente es compatible), **que rompen** y **huérfanas** (la revisión no está, o la clave no tiene vigente). El comparador es un parámetro, así que sirve para flujos (`compararFlujos`) o para cualquier otra cosa que la app versione.
 - **Huella.** `huella(valor)` es el SHA-256 del JSON canónico (`jsonCanonico`: claves ordenadas como en RFC 8785, sin `undefined`). Está escrita en TypeScript y es síncrona: sin `node:crypto` (el core anda en el navegador) ni `crypto.subtle` (es asíncrono).
 
+### 4.2 Eventos y reacciones
+
+Un evento es una capacidad más (`tipo: "evento"`), con su `schemaEntrada`. `reacciones[]` dice qué hace el flujo cuando llega: `{ id, evento, params?, desde, excepto?, si?, transicion?, efectos? }`.
+
+- **El core no escucha.** `suscripciones(definiciones)` dice qué hay que escuchar y `reaccionar(flujo, instancia, evento, ctx, registro)` devuelve el plan. Recibir, reintentar y ejecutar es de la app o de un plugin.
+- **Una reacción no habilita (regla 2).** No tiene `hacia`: nombra una `transicion` existente y pasa por sus requisitos. Si está bloqueada, el plan sale con `aplica: false`, los motivos y ningún efecto.
+- **`params` identifica la ocurrencia** y se compara entero (JSON canónico). En un estado, una ocurrencia tiene a lo sumo una reacción; si según los datos hay que ir a lugares distintos, se usa una decisión.
+- **Los datos del evento van en el contexto**, como `entrada`: las condiciones siguen siendo puras sobre el contexto.
+- **Comparar versiones.** Como una reacción actúa sola, quitarla, agregar una que mueve de estado o cambiar cuándo dispara rompe.
+
 ## 5. Reglas duras que quedan en el código
 
 No son capacidades del registro. El flujo no las puede saltear, desactivar ni reordenar. Se controlan en el código antes y después del flujo, y el resultado final es un AND.
