@@ -1,6 +1,6 @@
 {
   "name": "ts-workflow-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Motor de flujos configurables en TypeScript: definición, validación del grafo, intérprete puro, explicación («por qué no puedo») y simulación. Sin IO y con una sola dependencia (zod).",
   "license": "MIT",
   "author": "EasyIndustry",

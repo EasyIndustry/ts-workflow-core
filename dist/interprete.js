@@ -86,7 +86,7 @@ function resolverDestino(definicion, t, estado, contexto, registro) {
     }
     return { destino: nodo, recorrido };
 }
-function resolverEfectos(efectos, origen, ruta, contexto, registro) {
+export function resolverEfectos(efectos, origen, ruta, contexto, registro) {
     return (efectos ?? []).flatMap((e, i) => {
         if (e.si && !evaluarCondicion(e.si, contexto, registro, `${ruta}[${i}].si`).cumple)
             return [];

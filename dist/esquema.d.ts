@@ -65,6 +65,20 @@ export declare const transicionSchema: z.ZodObject<{
         si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
     }, z.core.$strict>>>;
 }, z.core.$strict>;
+export declare const reaccionSchema: z.ZodObject<{
+    id: z.ZodString;
+    evento: z.ZodString;
+    params: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    desde: z.ZodUnion<readonly [z.ZodLiteral<"*">, z.ZodArray<z.ZodString>]>;
+    excepto: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
+    transicion: z.ZodOptional<z.ZodString>;
+    efectos: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        efecto: z.ZodString;
+        params: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+        si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
+    }, z.core.$strict>>>;
+}, z.core.$strict>;
 export declare const definicionSchema: z.ZodObject<{
     id: z.ZodString;
     version: z.ZodNumber;
@@ -107,12 +121,27 @@ export declare const definicionSchema: z.ZodObject<{
             si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
         }, z.core.$strict>>>;
     }, z.core.$strict>>;
+    reacciones: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        evento: z.ZodString;
+        params: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+        desde: z.ZodUnion<readonly [z.ZodLiteral<"*">, z.ZodArray<z.ZodString>]>;
+        excepto: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
+        transicion: z.ZodOptional<z.ZodString>;
+        efectos: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            efecto: z.ZodString;
+            params: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+            si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
+        }, z.core.$strict>>>;
+    }, z.core.$strict>>>;
     metadatos: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strict>;
 export type Efecto = z.infer<typeof efectoSchema>;
 export type Estado = z.infer<typeof estadoSchema>;
 export type Decision = z.infer<typeof decisionSchema>;
 export type Transicion = z.infer<typeof transicionSchema>;
+export type Reaccion = z.infer<typeof reaccionSchema>;
 export type DefinicionFlujo = z.infer<typeof definicionSchema>;
 export declare function parsearDefinicion(valor: unknown): z.ZodSafeParseResult<{
     id: string;
@@ -155,6 +184,20 @@ export declare function parsearDefinicion(valor: unknown): z.ZodSafeParseResult<
         }[];
         sino: string;
         descripcion?: string | undefined;
+    }[] | undefined;
+    reacciones?: {
+        id: string;
+        evento: string;
+        desde: "*" | string[];
+        params?: Record<string, unknown> | undefined;
+        excepto?: string[] | undefined;
+        si?: Condicion | undefined;
+        transicion?: string | undefined;
+        efectos?: {
+            efecto: string;
+            params?: Record<string, unknown> | undefined;
+            si?: Condicion | undefined;
+        }[] | undefined;
     }[] | undefined;
     metadatos?: Record<string, unknown> | undefined;
 }>;
@@ -201,5 +244,19 @@ export declare function definicionJsonSchema(): z.core.ZodStandardJSONSchemaPayl
             si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
         }, z.core.$strict>>>;
     }, z.core.$strict>>;
+    reacciones: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        evento: z.ZodString;
+        params: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+        desde: z.ZodUnion<readonly [z.ZodLiteral<"*">, z.ZodArray<z.ZodString>]>;
+        excepto: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
+        transicion: z.ZodOptional<z.ZodString>;
+        efectos: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            efecto: z.ZodString;
+            params: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+            si: z.ZodOptional<z.ZodType<Condicion, unknown, z.core.$ZodTypeInternals<Condicion, unknown>>>;
+        }, z.core.$strict>>>;
+    }, z.core.$strict>>>;
     metadatos: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strict>>;

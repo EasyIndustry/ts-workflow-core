@@ -1,5 +1,5 @@
 import { ErrorFlujo } from "./errores.js";
-const TIPOS = ["accion", "condicion", "efecto"];
+const TIPOS = ["accion", "condicion", "efecto", "evento"];
 /** Arma el registro. Falla si una capacidad está mal declarada o si dos proveedores usan el mismo id. */
 export function crearRegistro(proveedores) {
     const porId = new Map();

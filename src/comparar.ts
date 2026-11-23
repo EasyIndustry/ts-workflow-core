@@ -1,5 +1,5 @@
 import { ErrorFlujo } from "./errores.js";
-import type { Condicion, Decision, DefinicionFlujo, Estado, Transicion } from "./esquema.js";
+import type { Condicion, Decision, DefinicionFlujo, Estado, Reaccion, Transicion } from "./esquema.js";
 import { jsonCanonico } from "./huella.js";
 import { aplicaDesde } from "./interprete.js";
 import { esObjeto } from "./jsonSchema.js";
@@ -37,6 +37,9 @@ export type CodigoCambio =
   | "requisitos_endurecidos"
   | "sugerencias_cambiadas"
   | "efectos_cambiados"
+  | "reaccion_agregada"
+  | "reaccion_quitada"
+  | "reaccion_modificada"
   // JSON Schema
   | "esquema_relajado"
   | "esquema_endurecido"
@@ -76,7 +79,8 @@ function resultado(cambios: Cambio[]): Comparacion {
  *
  * Rompe: quitar un estado, una decisión o una transición; achicar el `desde`; cambiar la acción o el `hacia` de una
  * transición; cambiar las ramas o el `sino` de una decisión; endurecer los `requisitos` (o no poder probar que no se
- * endurecieron). Lo demás es compatible: agregar, ampliar el `desde`, relajar requisitos, cambiar sugerencias, efectos,
+ * endurecieron); quitar una reacción, agregar una que mueve de estado o cambiar cuándo dispara o adónde lleva una
+ * existente (una reacción actúa sola, sin que nadie apriete un botón). Lo demás es compatible: agregar, ampliar el `desde`, relajar requisitos, cambiar sugerencias, efectos,
  * nombres, `final`, el estado inicial o los metadatos.
  *
  * Falla con `ErrorFlujo` («versiones_mezcladas») si las dos definiciones son de flujos distintos.
@@ -160,6 +164,25 @@ export function compararFlujos(antes: DefinicionFlujo, despues: DefinicionFlujo)
       if (!iguales(a.sugerencias, d.sugerencias)) cambio("compatible", "sugerencias_cambiadas", `${ruta}.sugerencias`, `Cambiaron las sugerencias de ${id} (no bloquean).`);
       if (!iguales(a.efectos, d.efectos)) cambio("compatible", "efectos_cambiados", `${ruta}.efectos`, `Cambiaron los efectos de ${id}.`);
       if (a.nombre !== d.nombre) cambio("compatible", "transicion_modificada", `${ruta}.nombre`, `Cambió el nombre de ${id}.`);
+    },
+  });
+
+  // Reacciones: actúan solas, así que cambiar cuándo disparan o qué transición intentan rompe.
+  emparejar(antes.reacciones ?? [], despues.reacciones ?? [], {
+    agregado: (r) =>
+      r.transicion === undefined
+        ? cambio("compatible", "reaccion_agregada", `reacciones[${r.id}]`, `Se agregó la reacción ${entreComillas(r.id)}, que solo produce efectos.`)
+        : cambio("rompe", "reaccion_agregada", `reacciones[${r.id}]`, `Se agregó la reacción ${entreComillas(r.id)}, que mueve de estado sin que nadie lo pida.`),
+    quitado: (r) => cambio("rompe", "reaccion_quitada", `reacciones[${r.id}]`, `Se quitó la reacción ${entreComillas(r.id)}: ese evento deja de tener respuesta.`),
+    ambos: (a, d) => {
+      const ruta = `reacciones[${a.id}]`;
+      const disparo = (r: Reaccion) => sinMensajes({ evento: r.evento, params: r.params, si: r.si, transicion: r.transicion });
+      const estadosDe = (r: Reaccion) => comunes.filter((e) => aplicaDesde(r, e.id)).map((e) => e.id);
+      if (!iguales(disparo(a), disparo(d)) || !iguales(estadosDe(a), estadosDe(d))) {
+        cambio("rompe", "reaccion_modificada", ruta, `Cambió cuándo dispara o qué hace la reacción ${entreComillas(a.id)}.`);
+      } else if (!iguales(a.efectos, d.efectos)) {
+        cambio("compatible", "efectos_cambiados", `${ruta}.efectos`, `Cambiaron los efectos de la reacción ${entreComillas(a.id)}.`);
+      }
     },
   });
 

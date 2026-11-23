@@ -3,7 +3,7 @@ import type { Params } from "./esquema.js";
  * Contrato del registro de capacidades. Es lo único que el motor sabe de la app: qué acciones, condiciones y efectos
  * existen, con qué parámetros y cómo se describen. La app lo llena con proveedores al arrancar.
  */
-export type TipoCapacidad = "accion" | "condicion" | "efecto";
+export type TipoCapacidad = "accion" | "condicion" | "efecto" | "evento";
 /** Un JSON Schema. El core valida un subconjunto (ver `validarJsonSchema`); el resto de las palabras se ignora. */
 export type EsquemaJson = {
     readonly [clave: string]: unknown;
@@ -16,7 +16,7 @@ export interface DescriptorCapacidad {
     readonly nombre: string;
     readonly tipo: TipoCapacidad;
     readonly descripcion?: string | undefined;
-    /** Params de la condición o del efecto, o el input de la acción. */
+    /** Params de la condición, del efecto o del evento, o el input de la acción. */
     readonly schemaEntrada?: EsquemaJson | undefined;
     /** Condiciones: frases con `{param}` para cuando se cumple y para cuando no. Las usan `explicar` y el editor. */
     readonly texto?: {
@@ -31,9 +31,9 @@ export interface CapacidadCondicion<C = Record<string, unknown>> extends Descrip
     readonly tipo: "condicion";
     evaluar(params: Params, contexto: C): boolean;
 }
-/** Acciones y efectos son solo descriptores: los ejecuta la app. */
+/** Acciones, efectos y eventos son solo descriptores: los ejecuta o los emite la app (o un plugin suyo). */
 export interface CapacidadSinEvaluacion extends DescriptorCapacidad {
-    readonly tipo: "accion" | "efecto";
+    readonly tipo: "accion" | "efecto" | "evento";
 }
 export type Capacidad<C = Record<string, unknown>> = CapacidadCondicion<C> | CapacidadSinEvaluacion;
 export interface Proveedor<C = Record<string, unknown>> {

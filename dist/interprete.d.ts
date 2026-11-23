@@ -1,5 +1,5 @@
 import { type ResultadoCondicion } from "./condiciones.js";
-import type { DefinicionFlujo, Estado, Params, Transicion } from "./esquema.js";
+import type { DefinicionFlujo, Efecto, Estado, Params, Transicion } from "./esquema.js";
 import type { Registro } from "./registro.js";
 import { type FuenteFlujo, type Instancia } from "./versiones.js";
 /**
@@ -19,7 +19,7 @@ export interface PasoRecorrido {
 export interface EfectoResuelto {
     efecto: string;
     params: Params;
-    /** De dónde sale: «transicion:<id>» o «estado:<id>» (los `alEntrar` del destino). */
+    /** De dónde sale: «transicion:<id>», «estado:<id>» (los `alEntrar` del destino) o «reaccion:<id>». */
     origen: string;
 }
 export interface AccionPermitida {
@@ -52,7 +52,8 @@ export interface ResultadoEvaluacion {
 }
 export declare function evaluar<C>(fuente: FuenteFlujo, instancia: Instancia, contexto: C, registro: Registro<C>): ResultadoEvaluacion;
 /** ¿La transición se puede intentar desde este estado? */
-export declare function aplicaDesde(t: Transicion, estado: string): boolean;
+export declare function aplicaDesde(t: Pick<Transicion, "desde" | "excepto">, estado: string): boolean;
 export declare function estadoDe(definicion: DefinicionFlujo, id: string): Estado;
 export declare function nombreDeEstado(definicion: DefinicionFlujo, id: string): string;
 export declare function nombreDeAccion<C>(t: Transicion, registro: Registro<C>): string;
+export declare function resolverEfectos<C>(efectos: Efecto[] | undefined, origen: string, ruta: string, contexto: C, registro: Registro<C>): EfectoResuelto[];
